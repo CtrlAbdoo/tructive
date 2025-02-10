@@ -1,49 +1,66 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 
 import '../register/login_view.dart';
 
-class Splash_Screen extends StatelessWidget {
-  static const String routeName = "splash";
-
-  const Splash_Screen({super.key});
-
+class StartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, LoginView.routeName);
-    });
-
-    var mediaQuery = MediaQuery.of(context).size;
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.black, Color(0xFF1E1E2E)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Expanded(
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-             mainAxisAlignment: MainAxisAlignment.center,
-            // crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                "assets/image/tructive-high-resolution-logo-transparent (4) 2.png",
-                width: mediaQuery.width,
-                height: mediaQuery.height,
-                 // fit: BoxFit.cover,
-               ),
-              SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  Icons.local_shipping_rounded,
+                  size: 80,
+                  color: Colors.blue,
+                ),
+              ),
+              SizedBox(height: 32),
               Text(
-                '"Ready to Transform Your Fleet Operations?"',
+                'Tructive',
                 style: TextStyle(
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
+                  color: Colors.blue,
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Transform Your Fleet Operations',
+                textAlign: TextAlign.center,
+                style: TextStyle(
                   color: Colors.white70,
+                  fontSize: 18,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(height: 48),
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignInScreen()),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  minimumSize: Size(double.infinity, 56),
+                ),
+                child: Text(
+                  'Get Started',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
