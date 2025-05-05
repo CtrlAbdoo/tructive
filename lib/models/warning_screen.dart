@@ -1,15 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WarningScreen extends StatelessWidget {
+  const WarningScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Warning'),
+        title: const Text('Warning'),
         centerTitle: true,
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(24),
           child: Column(

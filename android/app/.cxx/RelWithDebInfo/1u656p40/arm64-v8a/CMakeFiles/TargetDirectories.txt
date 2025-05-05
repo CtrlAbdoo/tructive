@@ -1,0 +1,2 @@
+C:/Users/monas/.vscode/tructive/android/app/.cxx/RelWithDebInfo/1u656p40/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/monas/.vscode/tructive/android/app/.cxx/RelWithDebInfo/1u656p40/arm64-v8a/CMakeFiles/rebuild_cache.dir

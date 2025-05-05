@@ -15,25 +15,27 @@ class ProfileScreen extends StatelessWidget {
     'vehicle': 'Tesla Model 3',
   };
 
+   ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: const Text('Profile'),
         centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Column(
               children: [
                 _buildProfileHeader(),
-                SizedBox(height: 32),
+                const SizedBox(height: 32),
                 _buildInfoCard(),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 _buildMenuSection(),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 _buildLogoutButton(context),
               ],
             ),
@@ -56,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
           child: ClipOval(
             child: Container(
               color: Colors.blue.withOpacity(0.1),
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 size: 60,
                 color: Colors.blue,
@@ -64,19 +66,19 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
           userInfo['name']!,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           userInfo['email']!,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             color: Colors.white70,
           ),
@@ -87,16 +89,16 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildInfoCard() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
       child: Column(
         children: [
           _buildInfoRow(Icons.phone, 'Phone', userInfo['phone']!),
-          Divider(height: 24, color: Colors.white10),
+          const Divider(height: 24, color: Colors.white10),
           _buildInfoRow(Icons.directions_car, 'Vehicle', userInfo['vehicle']!),
         ],
       ),
@@ -107,28 +109,28 @@ class ProfileScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.blue.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: Colors.blue, size: 20),
         ),
-        SizedBox(width: 16),
+        const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.white70,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
@@ -143,7 +145,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuSection() {
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
@@ -157,25 +159,25 @@ class ProfileScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => HistoryScreen()),
             ),
           ),
-          Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Colors.white10),
           _buildMenuItem(
             icon: Icons.description,
             title: 'Terms of Use',
             onTap: (context) => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => TermsOfUseScreen()),
+              MaterialPageRoute(builder: (context) => const TermsOfUseScreen()),
             ),
           ),
-          Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Colors.white10),
           _buildMenuItem(
             icon: Icons.privacy_tip,
             title: 'Privacy Policy',
             onTap: (context) => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PrivacyPolicyScreen()),
+              MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
             ),
           ),
-          Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Colors.white10),
           _buildMenuItem(
             icon: Icons.settings,
             title: 'Settings',
@@ -198,28 +200,28 @@ class ProfileScreen extends StatelessWidget {
       child: InkWell(
         onTap: () => onTap(navigatorKey.currentContext!),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: Colors.blue, size: 20),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
                   ),
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.chevron_right,
                 color: Colors.white70,
                 size: 20,
@@ -237,13 +239,13 @@ class ProfileScreen extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red.withOpacity(0.1),
         foregroundColor: Colors.red,
-        minimumSize: Size(double.infinity, 56),
+        minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         side: BorderSide(color: Colors.red.withOpacity(0.5)),
       ),
-      child: Text(
+      child: const Text(
         'Logout',
         style: TextStyle(
           fontSize: 18,
@@ -257,18 +259,18 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(
+        title: const Text(
           'Logout',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: Text(
+        content: const Text(
           'Are you sure you want to logout?',
           style: TextStyle(
             color: Colors.white70,
@@ -277,7 +279,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(color: Colors.white70),
             ),
@@ -287,7 +289,7 @@ class ProfileScreen extends StatelessWidget {
               Navigator.of(context).popUntil((route) => route.isFirst);
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => SignInScreen()),
+                MaterialPageRoute(builder: (context) => const SignInScreen()),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -297,7 +299,7 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text('Logout'),
+            child: const Text('Logout'),
           ),
         ],
       ),

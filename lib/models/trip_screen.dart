@@ -8,6 +8,8 @@ import 'package:tructive/models/warning_screen.dart';
 import 'home_screen.dart';
 
 class TripScreen extends StatefulWidget {
+  const TripScreen({super.key});
+
   @override
   _TripScreenState createState() => _TripScreenState();
 }
@@ -38,7 +40,7 @@ class _TripScreenState extends State<TripScreen> {
     setState(() {
       tripStarted = true;
     });
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         seconds++;
         int h = seconds ~/ 3600;
@@ -91,38 +93,38 @@ class _TripScreenState extends State<TripScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trip Details'),
+        title: const Text('Trip Details'),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               _buildTimerCard(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               Expanded(
                 child: _buildTripDataCard(),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               _buildActionButton(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed:  () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) =>  WarningScreen()),
+                    MaterialPageRoute(builder: (context) =>  const WarningScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.withOpacity(0.1),
                   foregroundColor: Colors.red,
-                  minimumSize: Size(double.infinity, 56),
+                  minimumSize: const Size(double.infinity, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   side: BorderSide(color: Colors.red.withOpacity(0.5)),
                 ),
-                child: Text(
+                child: const Text(
                   'Warning',
                   style: TextStyle(
                     fontSize: 18,
@@ -137,7 +139,7 @@ class _TripScreenState extends State<TripScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        backgroundColor: Color(0xFF121212),
+        backgroundColor: const Color(0xFF121212),
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.white70,
         type: BottomNavigationBarType.fixed,
@@ -164,9 +166,9 @@ class _TripScreenState extends State<TripScreen> {
   }
   Widget _buildTimerCard() {
     return Container(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: tripStarted ? Colors.green.withOpacity(0.3) : Colors.blue.withOpacity(0.3),
@@ -174,14 +176,14 @@ class _TripScreenState extends State<TripScreen> {
       ),
       child: Column(
         children: [
-          Text(
+          const Text(
             'Trip Duration',
             style: TextStyle(
               fontSize: 16,
               color: Colors.white70,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             timerText,
             style: TextStyle(
@@ -197,16 +199,16 @@ class _TripScreenState extends State<TripScreen> {
 
   Widget _buildTripDataCard() {
     return Container(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           Expanded(
             child: ListView.builder(
               itemCount: tripData.length,
@@ -224,20 +226,20 @@ class _TripScreenState extends State<TripScreen> {
 
   Widget _buildDataRow(String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: Colors.white70,
             ),
           ),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -253,11 +255,11 @@ class _TripScreenState extends State<TripScreen> {
       onPressed: tripStarted ? stopTimer : startTimer,
       style: ElevatedButton.styleFrom(
         backgroundColor: tripStarted ? Colors.red : Colors.green,
-        minimumSize: Size(double.infinity, 56),
+        minimumSize: const Size(double.infinity, 56),
       ),
       child: Text(
         tripStarted ? 'End Trip' : 'Start Trip',
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),

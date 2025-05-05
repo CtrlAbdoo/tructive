@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
       'title': 'Trip',
       'icon': Icons.timeline_rounded,
       'color': Colors.green,
-      'screen': TripScreen(),
+      'screen': const TripScreen(),
     },
     {
       'title': 'History',
@@ -34,11 +34,13 @@ class HomePage extends StatelessWidget {
     },
   ];
 
+   HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Tructive',
           style: TextStyle(
             color: Colors.blue,
@@ -49,11 +51,11 @@ class HomePage extends StatelessWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Welcome back,\nJohn Doe',
                 style: TextStyle(
                   fontSize: 28,
@@ -61,10 +63,10 @@ class HomePage extends StatelessWidget {
                   height: 1.2,
                 ),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
@@ -91,7 +93,7 @@ class HomePage extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xFF1E1E1E),
+          color: const Color(0xFF1E1E1E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: item['color'].withOpacity(0.3),
@@ -102,7 +104,7 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: item['color'].withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -113,10 +115,10 @@ class HomePage extends StatelessWidget {
                 size: 32,
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               item['title'],
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,

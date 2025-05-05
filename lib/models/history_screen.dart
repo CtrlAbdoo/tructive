@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HistoryScreen extends StatelessWidget {
@@ -18,20 +17,22 @@ class HistoryScreen extends StatelessWidget {
     // Add more history items as needed
   ];
 
+   HistoryScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trip History'),
+        title: const Text('Trip History'),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Recent Trips',
                 style: TextStyle(
                   fontSize: 24,
@@ -39,7 +40,7 @@ class HistoryScreen extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               Expanded(
                 child: ListView.builder(
                   itemCount: tripHistory.length,
@@ -57,10 +58,10 @@ class HistoryScreen extends StatelessWidget {
 
   Widget _buildHistoryItem(Map<String, dynamic> trip) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
@@ -78,14 +79,14 @@ class HistoryScreen extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   trip['status'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.green,
                     fontSize: 14,
                   ),
@@ -93,11 +94,11 @@ class HistoryScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             children: [
               _buildTripStat(Icons.timer, trip['duration']),
-              SizedBox(width: 24),
+              const SizedBox(width: 24),
               _buildTripStat(Icons.route, trip['distance']),
             ],
           ),
@@ -110,10 +111,10 @@ class HistoryScreen extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 16, color: Colors.white70),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             color: Colors.white,
             fontWeight: FontWeight.w500,
