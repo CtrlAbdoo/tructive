@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
       'title': 'Trip',
       'icon': Icons.timeline_rounded,
       'color': Colors.green,
-      'screen': const TripScreen(),
+      'screen': TripScreen(connection:   ,),
     },
     {
       'title': 'History',

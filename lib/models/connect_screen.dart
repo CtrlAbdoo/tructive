@@ -1,6 +1,8 @@
 // ignore_for_file: use_key_in_widget_constructors
 
 import 'dart:io';
+import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -15,7 +17,16 @@ class _ConnectScreenState extends State<ConnectScreen> {
   BluetoothConnection? connection;
   bool isConnected = false;
   bool isConnecting = false;
-  bool hasPermissions = false; // Track permissions status
+  bool hasPermissions = false;
+
+  // إضافات جديدة لحل المشاكل
+  StreamSubscription<Uint8List>? dataSubscription;
+  Timer? keepAliveTimer;
+  Timer? reconnectTimer;
+  BluetoothDevice? currentDevice; // حفظ الجهاز الحالي للإعادة الاتصال
+  int reconnectAttempts = 0;
+  final int maxReconnectAttempts = 5;
+  bool shouldReconnect = true; // للتحكم في إعادة الاتصال
 
   @override
   void initState() {
@@ -27,26 +38,27 @@ class _ConnectScreenState extends State<ConnectScreen> {
   Future<void> _checkAndRequestPermissions() async {
     try {
       if (Platform.isAndroid) {
-        // Request permissions through platform channel
         final Map<String, dynamic> args = {};
         final MethodChannel permissionChannel = MethodChannel('flutter_bluetooth_serial/permissions');
         final bool? result = await permissionChannel.invokeMethod<bool>('requestPermissions', args);
-        
-        setState(() {
-          hasPermissions = result ?? false;
-        });
-        
+
+        if (mounted) {
+          setState(() {
+            hasPermissions = result ?? false;
+          });
+        }
+
         if (hasPermissions) {
-          // Request Bluetooth enable
           await FlutterBluetoothSerial.instance.requestEnable();
         } else {
           _showPermissionDeniedDialog();
         }
       } else {
-        // For non-Android platforms
-        setState(() {
-          hasPermissions = true;
-        });
+        if (mounted) {
+          setState(() {
+            hasPermissions = true;
+          });
+        }
         await FlutterBluetoothSerial.instance.requestEnable();
       }
     } catch (e) {
@@ -56,19 +68,21 @@ class _ConnectScreenState extends State<ConnectScreen> {
   }
 
   void _showPermissionDeniedDialog() {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Bluetooth Permissions Required'),
         content: Text(
-          'This app needs Bluetooth permissions to connect to devices. '
-          'Please enable them in your device settings.'
+            'This app needs Bluetooth permissions to connect to devices. '
+                'Please enable them in your device settings.'
         ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _checkAndRequestPermissions(); // Try requesting again
+              _checkAndRequestPermissions();
             },
             child: Text('Try Again'),
           ),
@@ -90,97 +104,248 @@ class _ConnectScreenState extends State<ConnectScreen> {
         return;
       }
     }
-    
+
     try {
-      // Clear previous devices
-      setState(() {
-        devices = [];
-      });
-      
-      // Get bonded/paired devices
-      List<BluetoothDevice> bondedDevices = 
-          await FlutterBluetoothSerial.instance.getBondedDevices();
-      
-      setState(() {
-        devices = bondedDevices;
-      });
-      
-      // Show a snackbar with device count
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Found ${devices.length} paired devices'),
-          backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          devices = [];
+        });
+      }
+
+      List<BluetoothDevice> bondedDevices =
+      await FlutterBluetoothSerial.instance.getBondedDevices();
+
+      if (mounted) {
+        setState(() {
+          devices = bondedDevices;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Found ${devices.length} paired devices'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       print("Error discovering devices: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  // Connect to specific device
+  // Connect to specific device مع معالجة أفضل للأخطاء
   void _connectToDevice(BluetoothDevice device) async {
-    if (isConnecting) return;
-    
-    setState(() {
-      isConnecting = true;
-    });
-    
+    if (isConnecting || !mounted) return;
+
+    if (mounted) {
+      setState(() {
+        isConnecting = true;
+        currentDevice = device; // حفظ الجهاز للإعادة الاتصال
+        shouldReconnect = true;
+        reconnectAttempts = 0;
+      });
+    }
+
     try {
-      // Actual Bluetooth connection
-      BluetoothConnection newConnection =
-          await BluetoothConnection.toAddress(device.address);
-      
-      setState(() {
-        connection = newConnection;
-        isConnected = true;
-        isConnecting = false;
-      });
+      // محاولة الاتصال مع timeout
+      BluetoothConnection newConnection = await BluetoothConnection.toAddress(
+        device.address,
+      ).timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Connection timeout after 10 seconds');
+        },
+      );
 
-      // Listen for incoming data
-      connection!.input!.listen((data) {
-        print("Received data: ${String.fromCharCodes(data)}");
-        // You can process the data here
-      }).onDone(() {
-        // Connection closed
+      if (mounted) {
         setState(() {
-          isConnected = false;
+          connection = newConnection;
+          isConnected = true;
+          isConnecting = false;
+          reconnectAttempts = 0;
         });
-      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Connected to ${device.name ?? "Unknown Device"}'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        // إعداد الـ data listener مع معالجة أفضل للأخطاء
+        _setupDataListener();
+
+        // بدء الـ keep-alive timer
+        _startKeepAlive();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connected to ${device.name ?? "Unknown Device"}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      setState(() {
-        isConnecting = false;
-      });
+      if (mounted) {
+        setState(() {
+          isConnecting = false;
+        });
+      }
       print("Error connecting to device: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to connect: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+
+      // إعادة المحاولة التلقائية
+      if (shouldReconnect && reconnectAttempts < maxReconnectAttempts && mounted) {
+        _scheduleReconnect();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to connect: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
+  // إعداد الـ data listener مع معالجة أفضل للأخطاء
+  void _setupDataListener() {
+    if (connection?.input == null || !mounted) return;
+
+    dataSubscription?.cancel(); // إلغاء الـ subscription السابق
+
+    dataSubscription = connection!.input!.listen(
+          (Uint8List data) {
+        print("Received data: ${String.fromCharCodes(data)}");
+        // معالجة البيانات هنا
+      },
+      onError: (error) {
+        print("Data stream error: $error");
+        _handleConnectionLoss();
+      },
+      onDone: () {
+        print("Data stream closed");
+        _handleConnectionLoss();
+      },
+      cancelOnError: false, // مهم: عدم إلغاء الـ stream عند حدوث خطأ
+    );
+  }
+
+  // معالجة انقطاع الاتصال
+  void _handleConnectionLoss() {
+    if (!mounted) return;
+
+    setState(() {
+      isConnected = false;
+    });
+
+    _stopKeepAlive();
+
+    // إعادة المحاولة التلقائية
+    if (shouldReconnect && currentDevice != null && reconnectAttempts < maxReconnectAttempts) {
+      _scheduleReconnect();
+    }
+  }
+
+  // جدولة إعادة الاتصال
+  void _scheduleReconnect() {
+    if (!mounted) return;
+
+    reconnectAttempts++;
+    print("Scheduling reconnect attempt $reconnectAttempts/$maxReconnectAttempts");
+
+    reconnectTimer?.cancel();
+    reconnectTimer = Timer(Duration(seconds: 2 * reconnectAttempts), () {
+      if (shouldReconnect && currentDevice != null && !isConnected && mounted) {
+        print("Attempting reconnect...");
+        _connectToDevice(currentDevice!);
+      }
+    });
+  }
+
+  // Keep-alive mechanism
+  void _startKeepAlive() {
+    _stopKeepAlive(); // إيقاف الـ timer السابق
+
+    keepAliveTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+      if (connection != null && isConnected && mounted) {
+        try {
+          // إرسال ping بسيط للحفاظ على الاتصال
+          connection!.output.add(Uint8List.fromList([0x00])); // ping byte
+          print("Keep-alive ping sent");
+        } catch (e) {
+          print("Keep-alive error: $e");
+          _handleConnectionError();
+        }
+      }
+    });
+  }
+
+  // معالجة خطأ الاتصال
+  void _handleConnectionError() {
+    if (!mounted) return;
+    _handleConnectionLoss();
+  }
+
+  // إيقاف الـ keep-alive
+  void _stopKeepAlive() {
+    keepAliveTimer?.cancel();
+    keepAliveTimer = null;
+  }
+
+  // قطع الاتصال
   void _disconnect() async {
+    shouldReconnect = false; // منع إعادة الاتصال التلقائية
+
+    // إيقاف الـ timers
+    _stopKeepAlive();
+    reconnectTimer?.cancel();
+
+    // إلغاء الـ data subscription
+    dataSubscription?.cancel();
+    dataSubscription = null;
+
+    // قطع الاتصال
     if (connection != null) {
-      await connection!.finish();  // Using finish() instead of close()
+      try {
+        await connection!.finish();
+      } catch (e) {
+        print("Error during disconnect: $e");
+      }
+      connection = null;
+    }
+
+    if (mounted) {
       setState(() {
         isConnected = false;
-        connection = null;
+        currentDevice = null;
+        reconnectAttempts = 0;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Disconnected'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  // إرسال البيانات مع معالجة الأخطاء
+  Future<bool> sendData(String data) async {
+    if (connection == null || !isConnected) {
+      print("No active connection");
+      return false;
+    }
+
+    try {
+      connection!.output.add(Uint8List.fromList(data.codeUnits));
+      print("Data sent successfully: $data");
+      return true;
+    } catch (e) {
+      print("Error sending data: $e");
+      _handleConnectionLoss();
+      return false;
     }
   }
 
@@ -236,19 +401,19 @@ class _ConnectScreenState extends State<ConnectScreen> {
                   ),
                   child: devices.isEmpty
                       ? const Center(
-                          child: Text(
-                            'No devices found\nPair devices in Bluetooth Settings first',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        )
+                    child: Text(
+                      'No devices found\nPair devices in Bluetooth Settings first',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  )
                       : ListView.builder(
-                          padding: const EdgeInsets.all(8),
-                          itemCount: devices.length,
-                          itemBuilder: (context, index) {
-                            return _buildDeviceItem(devices[index]);
-                          },
-                        ),
+                    padding: const EdgeInsets.all(8),
+                    itemCount: devices.length,
+                    itemBuilder: (context, index) {
+                      return _buildDeviceItem(devices[index]);
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -265,35 +430,52 @@ class _ConnectScreenState extends State<ConnectScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Connected to: ${devices.firstWhere(
-                          (d) {
-                            // Extract address from BluetoothConnection string: "BluetoothConnection{address}"
-                            String connStr = connection?.toString() ?? "";
-                            String addr = "";
-                            // Check if we have the expected format with {address}
-                            if (connStr.contains("{") && connStr.contains("}")) {
-                              addr = connStr.split("{")[1].split("}")[0];
-                            }
-                            return d.address == addr;
-                          },
-                          orElse: () => BluetoothDevice(
-                            name: "Unknown", 
-                            address: ""
-                          )
-                        ).name ?? "Unknown Device"}',
+                        'Connected to: ${currentDevice?.name ?? "Unknown Device"}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _disconnect,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Address: ${currentDevice?.address ?? "Unknown"}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
                         ),
-                        child: const Text('Disconnect'),
+                      ),
+                      if (reconnectAttempts > 0)
+                        Text(
+                          'Reconnect attempts: $reconnectAttempts/$maxReconnectAttempts',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _disconnect,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: const Text('Disconnect'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => sendData("TEST\n"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                              ),
+                              child: const Text('Test Send'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -306,19 +488,8 @@ class _ConnectScreenState extends State<ConnectScreen> {
   }
 
   Widget _buildDeviceItem(BluetoothDevice device) {
-    bool isThisDeviceConnected = isConnected && connection != null;
-    
-    if (isThisDeviceConnected) {
-      // Extract address from BluetoothConnection string: "BluetoothConnection{address}"
-      String connStr = connection?.toString() ?? "";
-      String addr = "";
-      // Check if we have the expected format with {address}
-      if (connStr.contains("{") && connStr.contains("}")) {
-        addr = connStr.split("{")[1].split("}")[0];
-      }
-      isThisDeviceConnected = device.address == addr;
-    }
-    
+    bool isThisDeviceConnected = isConnected && currentDevice?.address == device.address;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       color: Colors.black12,
@@ -340,25 +511,32 @@ class _ConnectScreenState extends State<ConnectScreen> {
           'Address: ${device.address}',
           style: const TextStyle(color: Colors.white70),
         ),
-        trailing: isConnecting 
+        trailing: isConnecting
             ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        )
             : isThisDeviceConnected
-                ? const Icon(Icons.bluetooth_connected, color: Colors.green)
-                : const Icon(Icons.bluetooth, color: Colors.blue),
+            ? const Icon(Icons.bluetooth_connected, color: Colors.green)
+            : const Icon(Icons.bluetooth, color: Colors.blue),
       ),
     );
   }
 
   @override
   void dispose() {
-    // Clean up connection
+    shouldReconnect = false;
+
+    // تنظيف كل الـ resources
+    _stopKeepAlive();
+    reconnectTimer?.cancel();
+    dataSubscription?.cancel();
+
     if (connection != null) {
-      connection!.finish();  // Using finish() instead of dispose()
+      connection!.finish();
     }
+
     super.dispose();
   }
 }

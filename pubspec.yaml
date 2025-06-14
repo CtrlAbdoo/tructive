@@ -40,6 +40,7 @@ dependencies:
   # Using a local copy with namespace fix
   flutter_bluetooth_serial:
     path: ./flutter_bluetooth_serial_custom/
+
   # flutter_blue_plus: ^1.30.6
 
 dev_dependencies:
