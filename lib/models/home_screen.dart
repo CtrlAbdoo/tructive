@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:tructive/models/profile_screen.dart';
 import 'package:tructive/models/trip_screen.dart';
 
@@ -18,7 +19,7 @@ class HomePage extends StatelessWidget {
       'title': 'Trip',
       'icon': Icons.timeline_rounded,
       'color': Colors.green,
-      'screen': TripScreen(connection:   ,),
+      'screen': TripScreen(connection:  ,),
     },
     {
       'title': 'History',
